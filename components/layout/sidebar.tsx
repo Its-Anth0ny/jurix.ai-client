@@ -52,15 +52,18 @@ export function Sidebar({ mobileOpen, onMobileClose }: { mobileOpen?: boolean; o
       style={{ width: collapsed ? 56 : 220, transition: 'width 0.2s ease-in-out' }}
       className="flex-shrink-0 flex flex-col h-screen bg-sidebar border-r border-sidebar-border text-sidebar-foreground overflow-hidden"
     >
-      <div className="flex items-center h-11 px-3 border-b border-sidebar-border flex-shrink-0">
+      <div className="flex items-center h-11 px-3 gap-2 border-b border-sidebar-border flex-shrink-0">
         <Image
           src="/jurix_logo.png"
           alt="Jurix.ai"
-          width={collapsed ? 28 : 110}
+          width={28}
           height={28}
-          className="flex-shrink-0 object-contain"
+          className="flex-shrink-0"
           priority
         />
+        {!collapsed && (
+          <span className="font-semibold text-sm tracking-tight truncate">Jurix.ai</span>
+        )}
       </div>
 
       <nav className="flex-1 overflow-y-auto py-3 space-y-4">

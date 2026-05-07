@@ -14,8 +14,9 @@ export default function LandingPage() {
       {/* Navbar */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center">
-            <Image src="/jurix_logo.png" alt="Jurix.ai" width={100} height={28} className="object-contain" priority />
+          <div className="flex items-center gap-2">
+            <Image src="/jurix_logo.png" alt="Jurix.ai" width={28} height={28} priority />
+            <span className="font-semibold text-foreground">Jurix.ai</span>
           </div>
           <nav className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
@@ -226,8 +227,9 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-border px-6 py-8">
         <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center">
-            <Image src="/jurix_logo.png" alt="Jurix.ai" width={90} height={24} className="object-contain" />
+          <div className="flex items-center gap-2">
+            <Image src="/jurix_logo.png" alt="Jurix.ai" width={24} height={24} />
+            <span className="font-semibold text-foreground">Jurix.ai</span>
           </div>
           <p className="text-xs text-muted-foreground">© 2025 Jurix.ai. All rights reserved.</p>
         </div>
