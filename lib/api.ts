@@ -96,4 +96,11 @@ export const api = {
       method: 'DELETE',
       token,
     }),
+
+  translateDocument: (id: string, language: string, token: string) =>
+    request<import('@/types').TranslateResponse>(`/api/translate/${id}`, {
+      method: 'POST',
+      body: { language },
+      token,
+    }),
 };

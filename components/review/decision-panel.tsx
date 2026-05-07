@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { CheckCircle2, XCircle } from 'lucide-react';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 import { ActionPlan, ReviewDecision } from '@/types';
@@ -57,10 +57,22 @@ export function DecisionPanel({
         )}
 
         {reviewed ? (
-          <div className="flex items-center gap-2 text-xs text-green-700 dark:text-green-400">
-            <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
-            <span className="font-medium">Reviewed</span>
-            <span className="text-muted-foreground">· {currentDecision}</span>
+          <div className="flex items-center gap-3">
+            <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border ${
+              currentDecision === 'reviewed_rejected'
+                ? 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20'
+                : currentDecision === 'reviewed_edited'
+                ? 'bg-teal-500/10 text-teal-700 dark:text-teal-400 border-teal-500/20'
+                : 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20'
+            }`}>
+              {currentDecision === 'reviewed_rejected'
+                ? <XCircle className="w-3.5 h-3.5" />
+                : <CheckCircle2 className="w-3.5 h-3.5" />}
+              {currentDecision === 'reviewed_approved' ? 'Approved'
+                : currentDecision === 'reviewed_rejected' ? 'Rejected'
+                : 'Edited & Approved'}
+            </span>
+            <span className="text-xs text-muted-foreground">Review submitted</span>
           </div>
         ) : (
           <div className="flex gap-2">

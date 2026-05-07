@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Trash2, CheckCircle2 } from 'lucide-react';
+import { ExportPDFButton } from '@/components/documents/export-pdf-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StatusBadge } from '@/components/documents/status-badge';
@@ -25,23 +26,11 @@ import {
 // --- Confidence utilities (mocked — replace with backend scores when available) ---
 
 function mockConfidence(value?: string): number {
-  if (!value) return 0;
+  if (!value || typeof value !== 'string') return 0;
   const hash = value.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
   return Math.min(0.99, 0.65 + (hash % 35) / 100);
 }
 
-function ConfidenceDot({ value }: { value?: string }) {
-  if (!value) return null;
-  const pct = Math.round(mockConfidence(value) * 100);
-  const color = pct > 85 ? '#22C55E' : pct > 65 ? '#F59E0B' : '#EF4444';
-  return (
-    <span
-      title={`${pct}% confidence`}
-      className="inline-block w-1.5 h-1.5 rounded-full flex-shrink-0 cursor-help"
-      style={{ backgroundColor: color }}
-    />
-  );
-}
 
 function overallConfidence(extraction?: Extraction): number {
   const vals = [
@@ -172,12 +161,9 @@ function InfoCard({ title, children }: { title: string; children: React.ReactNod
 
 function InfoRow({ label, value }: { label: string; value?: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 text-xs">
+    <div className="flex items-start justify-between gap-4 text-xs">
       <span className="text-muted-foreground flex-shrink-0">{label}</span>
-      <span className="flex items-center gap-1.5">
-        <span className="text-foreground text-right">{value || 'N/A'}</span>
-        <ConfidenceDot value={value} />
-      </span>
+      <span className="text-foreground text-right min-w-0 break-words">{value || 'N/A'}</span>
     </div>
   );
 }
@@ -246,7 +232,7 @@ export default function DocumentDetailPage() {
   const audit = document.audit as AuditResult | undefined;
 
   const headerBar = (
-    <div className="h-11 flex items-center gap-3 px-4 border-b border-border bg-card flex-shrink-0">
+    <div className="h-14 flex items-center gap-3 px-4 border-b border-border bg-card flex-shrink-0">
       <button
         onClick={() => router.push('/dashboard')}
         className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
@@ -263,7 +249,7 @@ export default function DocumentDetailPage() {
   // Full-screen processing state
   if (document.status === 'processing') {
     return (
-      <div className="flex flex-col h-full -m-6 bg-background">
+      <div className="flex flex-col -m-6 bg-background" style={{ height: 'calc(100% + 3rem)' }}>
         {headerBar}
         <ProcessingView stage={document.stage} elapsed={elapsed} />
       </div>
@@ -272,9 +258,9 @@ export default function DocumentDetailPage() {
 
   // Full-screen results state
   return (
-    <div className="flex flex-col h-full -m-6 bg-background overflow-hidden">
+    <div className="flex flex-col -m-6 bg-background overflow-hidden" style={{ height: 'calc(100% + 3rem)' }}>
       {/* Header */}
-      <div className="h-11 flex items-center gap-3 px-4 border-b border-border bg-card flex-shrink-0">
+      <div className="h-14 flex items-center gap-3 px-4 border-b border-border bg-card flex-shrink-0">
         <button
           onClick={() => router.push('/dashboard')}
           className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
@@ -286,7 +272,6 @@ export default function DocumentDetailPage() {
         </span>
         <div className="flex items-center gap-2 flex-shrink-0">
           <StatusBadge status={document.status as DocumentStatus} />
-          <ConfidenceBanner extraction={extraction} />
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <button className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors">
@@ -321,22 +306,27 @@ export default function DocumentDetailPage() {
 
       {/* Tabs — full width, scrollable content */}
       <Tabs defaultValue="extraction" className="flex flex-col flex-1 min-h-0 overflow-hidden">
-        <TabsList className="rounded-none border-b border-border bg-background h-10 w-full justify-start px-4 flex-shrink-0">
-          <TabsTrigger value="extraction" className="text-xs data-[state=active]:bg-accent data-[state=active]:text-foreground rounded-md">
-            Extraction
-          </TabsTrigger>
-          <TabsTrigger value="action" className="text-xs data-[state=active]:bg-accent data-[state=active]:text-foreground rounded-md">
-            Action Plan
-          </TabsTrigger>
-          <TabsTrigger value="audit" className="text-xs data-[state=active]:bg-accent data-[state=active]:text-foreground rounded-md">
-            Audit
-          </TabsTrigger>
+        <TabsList variant="line" className="rounded-none border-b border-border bg-background h-10 w-full justify-start px-4 flex-shrink-0 gap-1">
+          {(['extraction', 'action', 'audit'] as const).map((tab, _, arr) => {
+            const labels: Record<typeof arr[number], string> = { extraction: 'Extraction', action: 'Action Plan', audit: 'Audit' };
+            return (
+              <TabsTrigger
+                key={tab}
+                value={tab}
+                className="h-10 px-3 text-xs rounded-none flex-none"
+              >
+                {labels[tab]}
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
 
         <div className="flex-1 overflow-y-auto">
           {/* Extraction */}
           <TabsContent value="extraction" className="p-6 mt-0">
-            <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="max-w-3xl mx-auto space-y-4">
+            <ConfidenceBanner extraction={extraction} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <InfoCard title="Case Details">
                 <InfoRow label="Case No." value={extraction?.case_details?.case_number} />
                 <InfoRow label="Court" value={extraction?.case_details?.court} />
@@ -361,13 +351,26 @@ export default function DocumentDetailPage() {
                   <InfoCard title="Deadlines">
                     {extraction.deadlines.map((d, i) => (
                       <div key={i} className="flex items-start gap-2 text-xs">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B] mt-1.5 flex-shrink-0" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0" />
                         <span className="text-foreground">{d}</span>
                       </div>
                     ))}
                   </InfoCard>
                 </div>
               ) : null}
+              {extraction?.citations?.length ? (
+                <div className="md:col-span-2">
+                  <InfoCard title="Citations">
+                    {extraction.citations.map((c, i) => (
+                      <div key={i} className="flex items-start gap-3 text-xs py-1.5 border-b border-border last:border-0">
+                        <span className="text-muted-foreground font-mono flex-shrink-0 w-8">p.{c.page}</span>
+                        <span className="text-foreground flex-1">{c.text}</span>
+                      </div>
+                    ))}
+                  </InfoCard>
+                </div>
+              ) : null}
+            </div>
             </div>
           </TabsContent>
 
@@ -393,16 +396,16 @@ export default function DocumentDetailPage() {
                   {actionPlan.actions?.length ? (
                     <InfoCard title="Required Actions">
                       {actionPlan.actions.map((a, i) => (
-                        <div key={i} className="flex items-start gap-3 text-xs py-1.5 border-b border-border last:border-0">
+                        <div key={i} className="flex items-start gap-3 text-xs py-2.5 border-b border-border last:border-0">
                           <span className="text-muted-foreground font-mono flex-shrink-0 mt-0.5">
                             {String(i + 1).padStart(2, '0')}
                           </span>
-                          <span className="text-foreground flex-1">
-                            {a.action}
+                          <div className="flex-1 min-w-0 space-y-0.5">
+                            <p className="text-foreground leading-relaxed">{a.action}</p>
                             {a.deadline && (
-                              <span className="text-muted-foreground ml-2">· due {a.deadline}</span>
+                              <p className="text-muted-foreground text-[11px]">Due {a.deadline}</p>
                             )}
-                          </span>
+                          </div>
                         </div>
                       ))}
                     </InfoCard>
@@ -481,14 +484,19 @@ export default function DocumentDetailPage() {
       </Tabs>
 
       {/* Sticky review footer */}
-      <div className="border-t border-border bg-card px-6 py-3 flex-shrink-0">
-        <div className="max-w-3xl mx-auto">
-          <DecisionPanel
-            documentId={documentId}
-            currentDecision={document.status}
-            actionPlan={actionPlan}
-            onReviewSubmitted={fetchDocument}
-          />
+      <div className="border-t border-border bg-card px-6 h-14 flex items-center flex-shrink-0">
+        <div className="max-w-3xl mx-auto w-full flex items-center gap-3">
+          <div className="flex-1">
+            <DecisionPanel
+              documentId={documentId}
+              currentDecision={document.status}
+              actionPlan={actionPlan}
+              onReviewSubmitted={fetchDocument}
+            />
+          </div>
+          {extraction && (
+            <ExportPDFButton documentId={documentId} extraction={extraction} actionPlan={actionPlan} />
+          )}
         </div>
       </div>
     </div>

@@ -69,3 +69,10 @@ export interface ReviewDecision {
   decision: 'approved' | 'edited' | 'rejected';
   edited_output?: ActionPlan;
 }
+
+export interface TranslateResponse {
+  document_id: string;
+  language: string;
+  translated_output: Extraction;
+  translation_warnings?: string[];
+}

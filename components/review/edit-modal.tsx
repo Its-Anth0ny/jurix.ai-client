@@ -23,7 +23,8 @@ export function EditModal({ isOpen, onClose, actionPlan, onSave }: EditModalProp
       setEdited(actionPlan);
       setSaveError('');
     }
-  }, [isOpen, actionPlan]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]); // intentionally omit actionPlan — background fetches must not wipe in-progress edits
 
   async function handleSave() {
     setIsSaving(true);
