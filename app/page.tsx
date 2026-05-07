@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   FileText, Zap, CheckCircle, Clock, Scale, Building2,
@@ -13,9 +14,8 @@ export default function LandingPage() {
       {/* Navbar */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-primary rounded-md flex items-center justify-center text-xs font-bold text-white">J</div>
-            <span className="font-semibold text-foreground">Jurix.ai</span>
+          <div className="flex items-center">
+            <Image src="/jurix_logo.png" alt="Jurix.ai" width={100} height={28} className="object-contain" priority />
           </div>
           <nav className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
@@ -226,9 +226,8 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-border px-6 py-8">
         <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-primary rounded-md flex items-center justify-center text-xs font-bold text-white">J</div>
-            <span className="font-semibold text-foreground">Jurix.ai</span>
+          <div className="flex items-center">
+            <Image src="/jurix_logo.png" alt="Jurix.ai" width={90} height={24} className="object-contain" />
           </div>
           <p className="text-xs text-muted-foreground">© 2025 Jurix.ai. All rights reserved.</p>
         </div>

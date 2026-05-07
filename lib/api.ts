@@ -89,4 +89,10 @@ export const api = {
       body: { decision, edited_output: editedOutput },
       token,
     }),
+
+  deleteDocument: (id: string, token: string) =>
+    request<{ success: boolean; message: string }>(`/api/document/${id}`, {
+      method: 'DELETE',
+      token,
+    }),
 };

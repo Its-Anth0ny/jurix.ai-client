@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -52,12 +53,14 @@ export function Sidebar({ mobileOpen, onMobileClose }: { mobileOpen?: boolean; o
       className="flex-shrink-0 flex flex-col h-screen bg-sidebar border-r border-sidebar-border text-sidebar-foreground overflow-hidden"
     >
       <div className="flex items-center h-11 px-3 border-b border-sidebar-border flex-shrink-0">
-        <div className="w-6 h-6 rounded bg-primary flex items-center justify-center flex-shrink-0">
-          <span className="text-primary-foreground text-xs font-bold">J</span>
-        </div>
-        {!collapsed && (
-          <span className="ml-2 font-semibold text-sm tracking-tight truncate">Jurix.ai</span>
-        )}
+        <Image
+          src="/jurix_logo.png"
+          alt="Jurix.ai"
+          width={collapsed ? 28 : 110}
+          height={28}
+          className="flex-shrink-0 object-contain"
+          priority
+        />
       </div>
 
       <nav className="flex-1 overflow-y-auto py-3 space-y-4">
