@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -17,6 +17,13 @@ export function EditModal({ isOpen, onClose, actionPlan, onSave }: EditModalProp
   const [edited, setEdited] = useState<ActionPlan>(actionPlan);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setEdited(actionPlan);
+      setSaveError('');
+    }
+  }, [isOpen, actionPlan]);
 
   async function handleSave() {
     setIsSaving(true);
