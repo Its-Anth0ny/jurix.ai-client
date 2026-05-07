@@ -62,12 +62,12 @@ export default function SettingsPage() {
                   <p className="text-xs text-muted-foreground">Contact support to change your email.</p>
                 </div>
               </div>
-              <div className="bg-[#1a0a0a] border border-[#3a1a1a] rounded-xl p-6">
-                <h3 className="text-sm font-medium text-[#EF4444] mb-1">Danger zone</h3>
+              <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-6">
+                <h3 className="text-sm font-medium text-red-700 dark:text-red-400 mb-1">Danger zone</h3>
                 <p className="text-xs text-muted-foreground mb-4">Permanently delete your account and all associated data. This cannot be undone.</p>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <button className="text-xs text-[#EF4444] border border-[#3a1a1a] px-3 py-1.5 rounded-lg hover:bg-[#2a1a1a] transition-colors">Delete account</button>
+                    <button className="text-xs text-red-700 dark:text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-colors">Delete account</button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>

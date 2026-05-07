@@ -96,13 +96,13 @@ const DocumentCardComponent = function DocumentCardComponent({ id, status, creat
             </Button>
           )}
           {status === 'completed' && (
-            <p className="text-xs text-[#F59E0B]">Awaiting review — click to open</p>
+            <p className="text-xs text-amber-700 dark:text-amber-400">Awaiting review — click to open</p>
           )}
           {(status === 'reviewed_approved' || status === 'reviewed_edited') && (
-            <p className="text-xs text-[#22C55E]">Review complete</p>
+            <p className="text-xs text-green-700 dark:text-green-400">Review complete</p>
           )}
           {status === 'reviewed_rejected' && (
-            <p className="text-xs text-[#EF4444]">Rejected</p>
+            <p className="text-xs text-red-700 dark:text-red-400">Rejected</p>
           )}
         </Link>
       </div>

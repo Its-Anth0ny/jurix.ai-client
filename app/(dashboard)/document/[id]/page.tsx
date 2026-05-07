@@ -380,8 +380,8 @@ export default function DocumentDetailPage() {
                     <span
                       className={`inline-flex px-3 py-1 rounded text-sm font-semibold ${
                         actionPlan.decision === 'comply'
-                          ? 'bg-[#1a3a1a] text-[#22C55E]'
-                          : 'bg-[#1f1f3a] text-[#818cf8]'
+                          ? 'bg-green-500/10 text-green-700 dark:text-green-400'
+                          : 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400'
                       }`}
                     >
                       {actionPlan.decision?.toUpperCase()}
@@ -423,8 +423,8 @@ export default function DocumentDetailPage() {
                     <span
                       className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
                         audit.status === 'approved'
-                          ? 'bg-[#1a3a1a] text-[#22C55E]'
-                          : 'bg-[#2a2a1a] text-[#F59E0B]'
+                          ? 'bg-green-500/10 text-green-700 dark:text-green-400'
+                          : 'bg-amber-500/10 text-amber-700 dark:text-amber-400'
                       }`}
                     >
                       {audit.status?.toUpperCase()}
@@ -466,7 +466,7 @@ export default function DocumentDetailPage() {
                       ))}
                     </InfoCard>
                   ) : (
-                    <div className="flex items-center gap-2 text-xs text-[#22C55E] p-3 bg-[#1a3a1a] rounded-lg border border-[#22C55E]/20">
+                    <div className="flex items-center gap-2 text-xs text-green-700 dark:text-green-400 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
                       <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
                       No issues — extraction validated successfully
                     </div>

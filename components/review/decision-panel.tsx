@@ -57,7 +57,7 @@ export function DecisionPanel({
         )}
 
         {reviewed ? (
-          <div className="flex items-center gap-2 text-xs text-[#22C55E]">
+          <div className="flex items-center gap-2 text-xs text-green-700 dark:text-green-400">
             <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
             <span className="font-medium">Reviewed</span>
             <span className="text-muted-foreground">· {currentDecision}</span>

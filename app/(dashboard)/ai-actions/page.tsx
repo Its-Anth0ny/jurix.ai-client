@@ -62,7 +62,7 @@ export default function AIActionsPage() {
           <p className="text-sm text-muted-foreground mt-1">Documents processed by AI awaiting your decision</p>
         </div>
         <div className="flex gap-2">
-          {urgentCount > 0 && <span className="inline-flex items-center gap-1 text-xs font-medium bg-[#3a1a1a] text-[#EF4444] px-3 py-1.5 rounded-full"><Clock className="w-3 h-3" /> {urgentCount} pending</span>}
+          {urgentCount > 0 && <span className="inline-flex items-center gap-1 text-xs font-medium bg-red-500/10 text-red-700 dark:text-red-400 px-3 py-1.5 rounded-full border border-red-500/20"><Clock className="w-3 h-3" /> {urgentCount} pending</span>}
         </div>
       </div>
 
@@ -107,7 +107,7 @@ function ReviewCard({ doc, onApprove, onReview, isSubmitting }: { doc: DocumentD
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <span className="text-sm font-mono text-foreground">{doc.document_id?.slice(0, 20)}...</span>
-          <span className={`text-xs px-2 py-0.5 rounded font-medium ${decision === 'comply' ? 'bg-[#1a3a1a] text-[#22C55E]' : 'bg-[#1f1f3a] text-[#818cf8]'}`}>
+          <span className={`text-xs px-2 py-0.5 rounded font-medium ${decision === 'comply' ? 'bg-green-500/10 text-green-700 dark:text-green-400' : 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400'}`}>
             {decision?.toUpperCase() || 'REVIEW'}
           </span>
         </div>
