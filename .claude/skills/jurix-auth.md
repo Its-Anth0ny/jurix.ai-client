@@ -1,83 +1,79 @@
 ---
 name: jurix-auth-frontend
-description: Use when working on JURIX frontend auth — useAuth hook, login/signup pages, token storage in localStorage, or route guards.
+description: Use when working on Jurix frontend auth — useAuth hook, login/signup pages, JWT token storage, ThemeProvider, or route guards in the dashboard layout.
 ---
 
-# JURIX Frontend Auth
+# Jurix Frontend Auth
 
 ## Overview
 
-JWT token stored in `localStorage` under `jurix_auth` key. `AuthProvider` context wraps the app. Route guard in dashboard layout redirects to `/login` if not authenticated.
+JWT token stored in `localStorage` under key `jurix_auth`. `AuthProvider` and `ThemeProvider` both wrap the app via `app/providers.tsx`. Route guard in `app/(dashboard)/layout.tsx` redirects unauthenticated users to `/login`.
 
-## When to Use
+**Do not modify `lib/auth.ts` or `hooks/useAuth.tsx` without user confirmation.**
 
-- Modifying login/signup forms
-- Changing auth hook behavior (login, signup, logout)
-- Modifying token storage approach
-- Changing route protection logic
-- Debugging auth state issues
+## Provider Tree
 
-## Auth Storage
-
-```typescript
-// lib/auth.ts
-const AUTH_KEY = 'jurix_auth'
-
-export function getAuth(): AuthData | null {
-  const stored = localStorage.getItem(AUTH_KEY)
-  return stored ? JSON.parse(stored) : null
+```tsx
+// app/providers.tsx
+export function Providers({ children }) {
+  return (
+    <ThemeProvider>
+      <AuthProvider>{children}</AuthProvider>
+    </ThemeProvider>
+  );
 }
 
-export function setAuth(data: AuthData): void {
-  localStorage.setItem(AUTH_KEY, JSON.stringify(data))
-}
-
-export function getToken(): string | null {
-  return getAuth()?.token ?? null
-}
-
-export function clearAuth(): void {
-  localStorage.removeItem(AUTH_KEY)
-}
+// app/layout.tsx
+<Providers>{children}</Providers>
 ```
 
-## AuthProvider (useAuth hook)
+## Token Storage (lib/auth.ts)
 
 ```typescript
-// hooks/useAuth.tsx — AuthProvider with login, signup, logout
-// Initialized from localStorage on mount via useEffect
+const AUTH_KEY = 'jurix_auth';
 
-const login = useCallback(async (email: string, password: string) => {
-  const response = await api.login(email, password)
-  setAuth({ token: response.token, user: response.user })
-  setUser(response.user)
-}, [])
+getAuth(): AuthData | null     // reads { token, user } from localStorage
+setAuth(data: AuthData): void  // writes to localStorage
+getToken(): string | null      // shorthand for getAuth()?.token
+clearAuth(): void              // removes key (used on logout)
+getCurrentUser(): User | null  // shorthand for getAuth()?.user
 ```
 
-## Route Guard
+## useAuth Hook
 
 ```typescript
-// (dashboard)/layout.tsx
+// hooks/useAuth.tsx
+const { user, isLoading, login, signup, logout } = useAuth();
+
+// login/signup call api.*, then setAuth() + setUser()
+// logout calls clearAuth() + setUser(null) + router.push('/login')
+// isLoading is true only during the initial localStorage hydration
+```
+
+## Route Guard (dashboard layout)
+
+```typescript
+// app/(dashboard)/layout.tsx
 useEffect(() => {
-  if (!isLoading && !user) {
-    router.push('/login')
-  }
-}, [user, isLoading, router])
+  if (!isLoading && !user) router.push('/login');
+}, [user, isLoading, router]);
+
+// Show spinner while isLoading
+// Return null if !user (prevents flash before redirect)
 ```
 
-## API Client Token Passing
+## Auth Page Pattern
 
-```typescript
-// lib/api.ts — token passed manually per-call
-const token = getToken()
-const response = await api.getDocument(id, token)
+Both login and signup use the same structure:
+- `useState` for email, password, error, isLoading, showPassword
+- Call `await login(email, password)` or `await signup(email, password)`
+- On success: `router.push('/dashboard')`
+- On error: display error in red alert box above submit button
+- Submit button shows spinner + disabled while `isLoading`
 
-// Upload uses FormData (browser sets Content-Type automatically)
-```
+## Constraints
 
-## Important Constraints
-
-- Token is in localStorage — NOT HTTP-only cookies
-- No token refresh — JWT expires after 24h, user must re-login manually
-- `token` parameter is optional in `api.reviewDocument` but always passed by callers
-- Must pass `token` from `getToken()` on every API call
+- Token lives in `localStorage` — NOT HTTP-only cookies
+- No refresh token — JWT expires after 24h, user must re-login
+- `getCurrentUser()` returns the stored user object synchronously (no async)
+- Theme toggle uses `useTheme()` from `hooks/useTheme.tsx` — separate from auth

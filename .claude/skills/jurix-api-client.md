@@ -1,96 +1,130 @@
 ---
 name: jurix-api-client
-description: Use when working on JURIX frontend API layer — lib/api.ts, document operations, upload flow, processing trigger, or review submission.
+description: Use when working on the Jurix frontend API layer — lib/api.ts, document operations, upload flow, processing trigger, review submission, or delete. DO NOT modify lib/api.ts without user confirmation.
 ---
 
-# JURIX API Client
+# Jurix API Client
 
 ## Overview
 
-Single API client module at `lib/api.ts`. All calls go through the `api` object. Token passed manually per-call via `getToken()`.
+Single API client at `lib/api.ts`. All requests go through the internal `request<T>()` helper. Token always passed manually per-call via `getToken()` from `lib/auth.ts`.
 
-## When to Use
+**Do not modify `lib/api.ts` without confirming with the user.**
 
-- Modifying API client functions
-- Adding new endpoints
-- Changing upload behavior
-- Modifying review submission
-- Debugging API call failures
-
-## API Functions
+## All Methods
 
 ```typescript
-// lib/api.ts
 export const api = {
   // Auth
-  login: (email, password) => request<{token, user}>('/api/auth/login', {...}),
-  signup: (email, password) => request<{token, user}>('/api/auth/signup', {...}),
+  login: (email: string, password: string) =>
+    request<{ token: string; user: { id: string; email: string } }>(
+      '/api/auth/login', { method: 'POST', body: { email, password } }
+    ),
 
-  // Documents
-  upload: (file: File, token: string) => {
-    // Uses FormData — browser sets Content-Type: multipart/form-data
-    const formData = new FormData()
-    formData.append('file', file)
-    return fetch(`${API_URL}/api/upload`, {
+  signup: (email: string, password: string) =>
+    request<{ token: string; user: { id: string; email: string } }>(
+      '/api/auth/signup', { method: 'POST', body: { email, password } }
+    ),
+
+  // Documents — list
+  getDocuments: (token: string) =>
+    request<{ documents: Array<{ _id: string; status: string; created_at: string }> }>(
+      '/api/documents', { token }
+    ),
+
+  // Document — single (includes extraction, action_plan, audit when completed)
+  getDocument: (id: string, token: string) =>
+    request<{
+      document_id: string; status: string; stage?: string;
+      extraction?: object; action_plan?: object; audit?: object; created_at?: string;
+    }>(`/api/document/${id}`, { token }),
+
+  // Upload — uses FormData; do NOT set Content-Type manually
+  upload: async (file: File, token: string) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await fetch(`${API_URL}/api/upload`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
-    })
+    });
+    if (!response.ok) throw new Error('Upload failed');
+    return response.json() as Promise<{ document_id: string }>;
   },
 
-  getDocuments: (token) => request('/api/documents', {token}),
-  getDocument: (id, token) => request(`/api/document/${id}`, {token}),
-  processDocument: (id, token) => request(`/api/process/${id}`, {method: 'POST', token}),
+  // Trigger AI processing pipeline
+  processDocument: (id: string, token: string) =>
+    request<{ document_id: string; status: string }>(`/api/process/${id}`, { method: 'POST', token }),
 
-  // Review
-  reviewDocument: (id, decision, editedOutput?, token?) =>
-    request(`/api/review/${id}`, {
+  // Submit human review decision
+  reviewDocument: (id: string, decision: string, editedOutput?: object, token?: string) =>
+    request<{ document_id: string; status: string }>(`/api/review/${id}`, {
       method: 'POST',
       body: { decision, edited_output: editedOutput },
       token,
     }),
+
+  // Delete document and all associated data
+  deleteDocument: (id: string, token: string) =>
+    request<{ success: boolean; message: string }>(`/api/document/${id}`, { method: 'DELETE', token }),
+};
+```
+
+## Standard Call Pattern
+
+```typescript
+const token = getToken();
+if (!token) return;
+try {
+  const data = await api.getDocuments(token);
+  setDocuments(data.documents ?? []);
+} catch (err) {
+  setError(err instanceof Error ? err.message : 'Failed to load');
 }
 ```
 
-## Document Status Types
+## Document Status Flow
 
-```typescript
-// types/index.ts
-type DocumentStatus = 'uploaded' | 'processing' | 'completed' | 'failed' | 'reviewed_approved' | 'reviewed_rejected' | 'reviewed_edited'
-
-interface ReviewDecision {
-  decision: 'approved' | 'edited' | 'rejected'
-  edited_output?: ActionPlan
-}
+```
+uploaded → processing → completed | failed
+                         ↓
+              reviewed_approved | reviewed_rejected | reviewed_edited
 ```
 
-## Processing Flow
+The `stage` field on a processing document indicates pipeline progress: `extracting → generating_action → auditing → done`.
+
+## Upload + Process (always paired)
 
 ```typescript
-// 1. Upload → get document_id
-const { document_id } = await api.upload(file, token)
-
-// 2. Trigger processing
-await api.processDocument(document_id, token)
-
-// 3. Poll until completed/failed
-const poll = setInterval(async () => {
-  const doc = await api.getDocument(id, token)
-  if (doc.status === 'completed' || doc.status === 'failed') {
-    clearInterval(poll)
-  }
-}, 10000) // 10 second polling
+const { document_id } = await api.upload(file, token);
+await api.processDocument(document_id, token);
+router.push(`/document/${document_id}`); // page starts polling
 ```
 
-## Review Submission
+## Polling Pattern
 
 ```typescript
-// Approve
-await api.reviewDocument(id, 'approved', undefined, token)
+useEffect(() => {
+  if (document?.status !== 'processing') return;
+  const interval = setInterval(fetchDocument, 10_000);
+  return () => clearInterval(interval);
+}, [document?.status, fetchDocument]);
+```
 
-// Reject
-await api.reviewDocument(id, 'rejected', undefined, token)
+## Review Decisions
 
-// Edit
-await api.reviewDocument(id, 'edited', { extraction: {...}, action_plan: {...} }, token)
+```typescript
+await api.reviewDocument(id, 'approved', undefined, token);
+await api.reviewDocument(id, 'rejected', undefined, token);
+await api.reviewDocument(id, 'edited', { decision: 'comply', department: 'Revenue', actions: [...] }, token);
+```
+
+## Error Display Pattern
+
+```tsx
+{error && (
+  <div className="text-destructive text-sm p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+    {error}
+  </div>
+)}
 ```

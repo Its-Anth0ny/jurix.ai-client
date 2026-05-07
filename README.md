@@ -1,153 +1,229 @@
-# JURIX.AI Frontend
+# Jurix.ai — Frontend
 
-Court judgment processing interface — upload PDFs, review AI-extracted facts and action plans, approve/edit/reject decisions.
+Production-grade AI-native SaaS interface for court judgment processing. Upload PDF court orders, let AI extract facts and generate action plans, then approve/edit/reject decisions — within a dark-mode-first enterprise UI.
 
-## Overview
+---
 
-The frontend is a Next.js 16 application that wraps the backend API. Users authenticate, upload court judgment PDFs, monitor AI processing, and submit review decisions.
+## User Flow
 
-**User flow:** Auth → Upload → Wait (polling) → View extraction/action_plan/audit → Approve/Edit/Reject
+```
+Auth → Upload PDF → AI Processing (polling) → Review tabs → Approve / Edit / Reject
+```
+
+---
 
 ## Tech Stack
 
-| Component | Technology |
-|-----------|------------|
-| Framework | Next.js 16 (App Router) |
-| Language | TypeScript |
-| Styling | Tailwind CSS, shadcn/ui |
-| State | React Context (AuthProvider, ThemeProvider) |
-| Auth | JWT in localStorage |
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16.2.4 (App Router, Turbopack) |
+| Language | TypeScript 5 |
+| Styling | Tailwind CSS v4, shadcn/ui |
+| State | React Context (auth, theme) + Zustand (documents cache — planned) |
+| Charts | Recharts |
+| Animation | Framer Motion |
+| Icons | Lucide React |
+| Auth | JWT in `localStorage` |
+| Font | Geist Sans + Geist Mono |
 
-## Core Features
+---
 
-### Authentication
-- Login/Signup forms
-- JWT token stored in `localStorage` (`jurix_auth` key)
-- Route guards redirect to `/login` if not authenticated
+## Pages & Routes
 
-### Dashboard
-- Document list with status indicators
-- Upload dialog (PDF only)
-- Real-time status polling during processing (10s interval)
+| Route | Auth | Description |
+|---|---|---|
+| `/` | Public | Landing page — 7 sections |
+| `/login` | Guest | JWT login form |
+| `/signup` | Guest | Account creation |
+| `/dashboard` | Required | Stat cards, recent judgments, AI insights feed |
+| `/judgments` | Required | Full document grid with search + status filter |
+| `/ai-actions` | Required | Review queue — completed docs needing decision |
+| `/analytics` | Required | Monthly trend chart, status donut, compliance rate |
+| `/settings` | Required | Account, theme, API endpoint config |
+| `/document/[id]` | Required | Split-pane: PDF + AI panel (Extraction / Action Plan / Audit) |
 
-### Document Detail
-- Tabbed view: Extraction / Action Plan / Audit
-- Review panel: Approve / Edit / Reject actions
-- 24h JWT expiry — re-login required after token expiration
-
-### API Integration
-- `lib/api.ts` — centralized API client
-- Token passed manually per-call via `getToken()`
-- FormData upload (browser sets Content-Type automatically)
+---
 
 ## Architecture
 
 ```
 app/
-├── page.tsx              # Root → redirect to dashboard or login
+├── page.tsx                          # Landing page (public)
+├── layout.tsx                        # Root: Geist font, ThemeProvider, AuthProvider
+├── providers.tsx                     # ThemeProvider + AuthProvider wrapper
+├── global-error.tsx                  # App-level error boundary
+├── not-found.tsx                     # 404 page
+├── globals.css                       # Tailwind v4 + CSS design tokens (dark/light)
+│
 ├── (auth)/
 │   ├── login/page.tsx
 │   └── signup/page.tsx
-├── (dashboard)/
-│   ├── layout.tsx        # Sidebar + Topbar, route guard
-│   ├── dashboard/page.tsx # Document list + upload dialog
-│   └── document/[id]/page.tsx  # Detail + tabs + review
-├── providers.tsx          # AuthProvider + ThemeProvider
-├── hooks/
-│   ├── useAuth.tsx       # login, signup, logout, user state
-│   └── useTheme.tsx      # light/dark mode
-├── lib/
-│   ├── api.ts            # API client (all endpoints)
-│   ├── auth.ts           # localStorage token management
-│   └── utils.ts          # cn(), formatDate()
-└── types/index.ts         # DocumentStatus, ReviewDecision, etc.
+│
+└── (dashboard)/
+    ├── layout.tsx                    # Auth guard + Sidebar + Topbar + CommandPalette
+    ├── dashboard/page.tsx
+    ├── judgments/page.tsx
+    ├── ai-actions/page.tsx
+    ├── analytics/page.tsx
+    ├── settings/page.tsx
+    └── document/[id]/page.tsx
+
+components/
+├── layout/
+│   ├── sidebar.tsx                   # Collapsible nav (desktop) + overlay drawer (mobile)
+│   └── topbar.tsx                    # ⌘K search, theme toggle, notifications, user avatar
+├── documents/
+│   ├── document-card.tsx             # Status badge, hover-reveal delete, progress bar
+│   ├── status-badge.tsx              # Color-coded per DocumentStatus
+│   └── upload-form.tsx               # Drag-and-drop PDF upload
+├── review/
+│   ├── decision-panel.tsx            # Approve / Edit & Approve / Reject
+│   └── edit-modal.tsx                # Edit action plan before approval
+└── ui/
+    ├── command-palette.tsx           # ⌘K: page navigation + actions
+    ├── alert-dialog.tsx
+    ├── button.tsx / input.tsx / label.tsx / card.tsx
+    ├── dialog.tsx / tabs.tsx / badge.tsx / skeleton.tsx
+    └── toast.tsx / sonner.tsx
+
+lib/
+├── api.ts            # ALL API calls — DO NOT MODIFY
+├── auth.ts           # localStorage token management — DO NOT MODIFY
+└── utils.ts          # cn(), formatDate()
+
+hooks/
+├── useAuth.tsx       # login / signup / logout / user state — DO NOT MODIFY
+└── useTheme.tsx      # light/dark toggle, persisted to localStorage
+
+types/index.ts        # DocumentStatus, ReviewDecision, Extraction, ActionPlan, etc.
+
+docs/superpowers/
+├── specs/2026-05-07-jurix-ui-revamp-design.md
+└── plans/2026-05-07-spec-gaps.md     # Remaining tasks (Zustand store, mobile drawer, etc.)
+
+scripts/
+└── patch-next.js     # Fixes Next.js 16.2.4 /_global-error prerender bug
 ```
 
-## User Flow
+---
 
-```
-1. / → redirects to /login (if not authed) or /dashboard (if authed)
-2. /login or /signup → POST credentials → JWT stored in localStorage
-3. /dashboard → GET /api/documents → display document grid
-4. Upload → POST /api/upload → get document_id
-5. Process → POST /api/process/{id} → background pipeline starts
-6. Poll GET /api/document/{id} every 10s until status = completed/failed
-7. View extraction, action_plan, audit tabs
-8. Submit decision → POST /api/review/{id} (approved/rejected/edited)
-```
+## Design System
+
+All tokens defined as CSS custom properties in `app/globals.css`.
+
+| Token | Dark | Light | Role |
+|---|---|---|---|
+| `--background` | `#0A0A0A` | `#ffffff` | Page background |
+| `--card` | `#111111` | `#f9f9fb` | Cards, elevated surfaces |
+| `--secondary` | `#171717` | `#f4f4f5` | Hover states, code blocks |
+| `--border` | `#262626` | `#e4e4e7` | All borders |
+| `--foreground` | `#FAFAFA` | `#09090b` | Primary text |
+| `--muted-foreground` | `#737373` | `#71717a` | Metadata, subtitles |
+| `--primary` | `#4F46E5` | `#4F46E5` | Actions, active nav, links |
+| Success | `#22C55E` | — | Completed status |
+| Warning | `#F59E0B` | — | Pending, in-review |
+| Error/Destructive | `#EF4444` | — | Failed, delete actions |
+
+Dark mode is default (`<html class="dark">`). Toggle via topbar or `/settings → Appearance`.
+
+---
 
 ## Setup
 
 ### Requirements
-- Node.js 18+
-- npm or pnpm
-- Backend running at `http://localhost:8000` (or set `NEXT_PUBLIC_API_URL`)
 
-### Installation
+- **Node.js 20+** required for `npm run build` (dev server works on Node 16+)
+- Backend running at `http://localhost:8000`
+
+### Install
 
 ```bash
 npm install
 ```
 
-### Environment Variables
+### Environment
+
+Create `.env.local`:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-### Run
+### Dev server
 
 ```bash
 npm run dev
-# Opens http://localhost:3000
+# → http://localhost:3000
 ```
 
-## Integration with Backend
-
-Backend API base: `http://localhost:8000` (configurable via `NEXT_PUBLIC_API_URL`)
-
-All authenticated requests include `Authorization: Bearer <token>` header.
-
-```typescript
-// lib/api.ts
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-
-// Token retrieved from localStorage per-request
-const token = getToken() // from lib/auth.ts
-const doc = await api.getDocument(id, token)
-```
-
-## Getting Started
-
-First, run the development server:
+### Production build
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# If using nvm:
+nvm use 20
+
+npm run build   # runs patch script automatically, then next build
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result..
+> `npm run build` prepends `node scripts/patch-next.js` which patches a Next.js 16.2.4 bug where `/_global-error` is forced into static prerendering despite needing React context. The patch is idempotent.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Key Invariants
 
-## Learn More
+### DO NOT MODIFY without care
 
-To learn more about Next.js, take a look at the following resources:
+| File | Reason |
+|---|---|
+| `lib/api.ts` | Single source of truth for all API endpoints and error handling |
+| `lib/auth.ts` | Token read/write — changes break all auth flows |
+| `hooks/useAuth.tsx` | Auth context consumed by layout guard and all pages |
+| `types/index.ts` | Shared types — renaming fields breaks downstream consumers |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Auth
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- JWT stored in `localStorage` under key `jurix_auth`
+- Token passed manually to every API call via `getToken()` from `lib/auth.ts`
+- No refresh token — 24h expiry, user must re-login
+- Route guard in `app/(dashboard)/layout.tsx` redirects to `/login` when unauthenticated
 
-## Deploy on Vercel
+### Document Processing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+api.upload(file, token)        → { document_id }
+api.processDocument(id, token) → kicks off background pipeline
+router.push(`/document/${id}`) → page polls every 10s until status !== 'processing'
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Polling
+
+Document detail page (`app/(dashboard)/document/[id]/page.tsx`) polls `api.getDocument()` every 10 seconds while `status === 'processing'`. The `fetchDocument` function is wrapped in `useCallback` so the interval reference is stable.
+
+---
+
+## Command Palette (⌘K)
+
+Opens via topbar click or `⌘K` / `Ctrl+K` anywhere in the dashboard layout.
+
+Currently supported:
+- Page navigation (Dashboard, Judgments, AI Actions, Analytics, Settings)
+- Keyboard navigation (↑ ↓ Enter Esc)
+
+Planned (see `docs/superpowers/plans/2026-05-07-spec-gaps.md`):
+- Document search by ID (from Zustand cache)
+- "Upload judgment" action
+- Theme toggle action
+
+---
+
+## Remaining Work
+
+See `docs/superpowers/plans/2026-05-07-spec-gaps.md` for the 6 planned tasks:
+
+1. Zustand documents store (`store/documents.ts`)
+2. Populate store in dashboard layout
+3. Enhanced command palette (doc search, upload, theme)
+4. Wire upload dialog to palette
+5. Live AI Actions badge count from store
+6. Mobile sidebar overlay drawer
