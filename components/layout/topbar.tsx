@@ -32,8 +32,10 @@ export function Topbar({ onMobileMenuToggle, onOpenSearch }: { onMobileMenuToggl
 
       <div className="ml-auto flex items-center gap-1">
         <button
-          className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+          className="p-1.5 rounded text-muted-foreground opacity-40 cursor-not-allowed"
           aria-label="Notifications"
+          title="Notifications coming soon"
+          disabled
         >
           <Bell className="w-4 h-4" />
         </button>

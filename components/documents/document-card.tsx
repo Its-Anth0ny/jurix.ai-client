@@ -26,9 +26,10 @@ interface DocumentCardProps {
   status: DocumentStatus;
   createdAt?: string;
   onDeleted?: (id: string) => void;
+  onRetried?: () => void;
 }
 
-const DocumentCardComponent = function DocumentCardComponent({ id, status, createdAt, onDeleted }: DocumentCardProps) {
+const DocumentCardComponent = function DocumentCardComponent({ id, status, createdAt, onDeleted, onRetried }: DocumentCardProps) {
   const [isRetrying, setIsRetrying] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -40,6 +41,7 @@ const DocumentCardComponent = function DocumentCardComponent({ id, status, creat
       const token = getToken();
       if (!token) return;
       await api.processDocument(id, token);
+      onRetried?.();
     } finally {
       setIsRetrying(false);
     }
@@ -65,13 +67,25 @@ const DocumentCardComponent = function DocumentCardComponent({ id, status, creat
         <Link href={`/document/${id}`} className="block">
           <div className="flex items-start justify-between mb-3">
             <span className="text-xs font-mono text-muted-foreground">{id.slice(0, 16)}...</span>
-            <StatusBadge status={status} />
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <StatusBadge status={status} />
+              {status !== 'processing' && (
+                <AlertDialogTrigger asChild>
+                  <button
+                    className="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all flex-shrink-0"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </AlertDialogTrigger>
+              )}
+            </div>
           </div>
           <p className="text-xs text-muted-foreground mb-3">Uploaded {formatDate(createdAt)}</p>
           {status === 'processing' && (
             <div>
               <div className="h-1 bg-secondary rounded-full overflow-hidden mb-1">
-                <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: '65%' }} />
+                <div className="h-full w-full bg-primary rounded-full animate-pulse" />
               </div>
               <p className="text-xs text-primary">AI processing...</p>
             </div>
@@ -82,19 +96,15 @@ const DocumentCardComponent = function DocumentCardComponent({ id, status, creat
             </Button>
           )}
           {status === 'completed' && (
-            <p className="text-xs text-[#22C55E]">Processing complete — click to review</p>
+            <p className="text-xs text-[#F59E0B]">Awaiting review — click to open</p>
+          )}
+          {(status === 'reviewed_approved' || status === 'reviewed_edited') && (
+            <p className="text-xs text-[#22C55E]">Review complete</p>
+          )}
+          {status === 'reviewed_rejected' && (
+            <p className="text-xs text-[#EF4444]">Rejected</p>
           )}
         </Link>
-        {status !== 'processing' && (
-          <AlertDialogTrigger asChild>
-            <button
-              className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 w-6 h-6 flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </AlertDialogTrigger>
-        )}
       </div>
       <AlertDialogContent>
         <AlertDialogHeader>

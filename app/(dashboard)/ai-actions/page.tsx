@@ -11,6 +11,7 @@ import { Clock, ChevronRight, CheckCircle } from 'lucide-react';
 export default function AIActionsPage() {
   const [docs, setDocs] = useState<DocumentDetail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
   const [filter, setFilter] = useState<'all' | 'comply' | 'appeal'>('all');
   const [submitting, setSubmitting] = useState<string | null>(null);
   const router = useRouter();
@@ -34,11 +35,16 @@ export default function AIActionsPage() {
 
   async function handleApprove(docId: string) {
     setSubmitting(docId);
+    setError('');
     try {
       const token = getToken(); if (!token) return;
       await api.reviewDocument(docId, 'approved', undefined, token);
       setDocs(prev => prev.filter(d => d.document_id !== docId));
-    } finally { setSubmitting(null); }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Approval failed');
+    } finally {
+      setSubmitting(null);
+    }
   }
 
   const filtered = docs.filter(d => {
@@ -59,6 +65,10 @@ export default function AIActionsPage() {
           {urgentCount > 0 && <span className="inline-flex items-center gap-1 text-xs font-medium bg-[#3a1a1a] text-[#EF4444] px-3 py-1.5 rounded-full"><Clock className="w-3 h-3" /> {urgentCount} pending</span>}
         </div>
       </div>
+
+      {error && (
+        <div className="text-destructive text-sm p-3 bg-destructive/10 border border-destructive/20 rounded-lg">{error}</div>
+      )}
 
       <div className="flex gap-1 p-1 bg-card border border-border rounded-lg w-fit">
         {(['all', 'comply', 'appeal'] as const).map(f => (

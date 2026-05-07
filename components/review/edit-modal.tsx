@@ -10,15 +10,25 @@ interface EditModalProps {
   isOpen: boolean;
   onClose: () => void;
   actionPlan: ActionPlan;
-  onSave: (edited: ActionPlan) => void;
+  onSave: (edited: ActionPlan) => Promise<void>;
 }
 
 export function EditModal({ isOpen, onClose, actionPlan, onSave }: EditModalProps) {
   const [edited, setEdited] = useState<ActionPlan>(actionPlan);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
-  function handleSave() {
-    onSave(edited);
-    onClose();
+  async function handleSave() {
+    setIsSaving(true);
+    setSaveError('');
+    try {
+      await onSave(edited);
+      onClose();
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Save failed');
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -61,12 +71,17 @@ export function EditModal({ isOpen, onClose, actionPlan, onSave }: EditModalProp
             />
           </div>
         </div>
+        {saveError && (
+          <div className="text-destructive text-xs p-2 bg-destructive/10 border border-destructive/20 rounded-md mx-6 -mt-2">
+            {saveError}
+          </div>
+        )}
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={onClose} className="border-border hover:bg-secondary">
+          <Button variant="outline" onClick={onClose} disabled={isSaving} className="border-border hover:bg-secondary">
             Cancel
           </Button>
-          <Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-white">
-            Save Changes
+          <Button onClick={handleSave} disabled={isSaving} className="bg-primary hover:bg-primary/90 text-white">
+            {isSaving ? 'Saving...' : 'Save Changes'}
           </Button>
         </DialogFooter>
       </DialogContent>

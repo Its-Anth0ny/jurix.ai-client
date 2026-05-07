@@ -57,7 +57,8 @@ export const api = {
     });
 
     if (!response.ok) {
-      throw new Error('Upload failed');
+      const error = await response.json().catch(() => ({ detail: 'Upload failed' }));
+      throw new Error(error.detail || `Upload failed (${response.status})`);
     }
     return response.json();
   },

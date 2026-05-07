@@ -23,7 +23,7 @@ const navGroups = [
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/judgments', label: 'Judgments', icon: FileText },
-      { href: '/ai-actions', label: 'AI Actions', icon: Zap, badge: '3' },
+      { href: '/ai-actions', label: 'AI Actions', icon: Zap },
     ],
   },
   {
@@ -70,7 +70,7 @@ export function Sidebar({ mobileOpen, onMobileClose }: { mobileOpen?: boolean; o
         {navGroups.map((group) => (
           <div key={group.label}>
             {!collapsed && (
-              <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: '#4a4a4a' }}>
+              <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
                 {group.label}
               </p>
             )}
@@ -92,14 +92,6 @@ export function Sidebar({ mobileOpen, onMobileClose }: { mobileOpen?: boolean; o
                       <Icon className="w-4 h-4 flex-shrink-0" />
                       {!collapsed && (
                         <span className="truncate flex-1">{item.label}</span>
-                      )}
-                      {!collapsed && item.badge && (
-                        <span className="ml-auto text-[10px] font-semibold bg-destructive text-white rounded-full px-1.5 py-0.5 leading-none">
-                          {item.badge}
-                        </span>
-                      )}
-                      {collapsed && item.badge && (
-                        <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
                       )}
                     </Link>
                   </li>

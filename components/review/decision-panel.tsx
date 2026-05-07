@@ -51,45 +51,39 @@ export function DecisionPanel({
           onSave={(edited) => handleDecision('edited', edited)}
         />
       )}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-primary rounded flex items-center justify-center">
-            <Sparkles className="w-2.5 h-2.5 text-white" />
-          </div>
-          <span className="text-xs font-medium text-primary uppercase tracking-wide">AI Recommendation</span>
-        </div>
-
+      <div className="space-y-2">
         {error && (
           <div className="text-destructive text-xs p-2 bg-destructive/10 border border-destructive/20 rounded-md">{error}</div>
         )}
 
         {reviewed ? (
-          <div className="p-3 bg-[#1a3a1a] border border-[#1a4a1a] rounded-lg">
-            <p className="text-sm font-medium text-[#22C55E]">Already reviewed</p>
-            <p className="text-xs text-muted-foreground mt-1">Decision: {currentDecision}</p>
+          <div className="flex items-center gap-2 text-xs text-[#22C55E]">
+            <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="font-medium">Reviewed</span>
+            <span className="text-muted-foreground">· {currentDecision}</span>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="flex gap-2">
             <button
-              onClick={() => handleDecision('approved')}
+              onClick={() => handleDecision('rejected')}
               disabled={isSubmitting}
-              className="w-full h-9 bg-[#22C55E] hover:bg-[#16a34a] text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              className="h-8 px-4 text-xs bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 text-destructive rounded-lg transition-colors disabled:opacity-50"
             >
-              ✓ Approve
+              ✗ Reject
             </button>
             <button
               onClick={() => setEditModalOpen(true)}
               disabled={isSubmitting}
-              className="w-full h-9 bg-secondary border border-border hover:bg-card text-foreground text-sm rounded-lg transition-colors disabled:opacity-50"
+              className="flex-1 h-8 px-4 text-xs bg-secondary border border-border hover:bg-card text-foreground rounded-lg transition-colors disabled:opacity-50"
             >
               ✎ Edit &amp; Approve
             </button>
             <button
-              onClick={() => handleDecision('rejected')}
+              onClick={() => handleDecision('approved')}
               disabled={isSubmitting}
-              className="w-full h-9 bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 text-destructive text-sm rounded-lg transition-colors disabled:opacity-50"
+              className="h-8 px-4 text-xs bg-[#22C55E] hover:bg-[#16a34a] text-white font-medium rounded-lg transition-colors disabled:opacity-50"
             >
-              ✗ Reject
+              ✓ Approve
             </button>
           </div>
         )}

@@ -1,4 +1,4 @@
-export type DocumentStatus = 'uploaded' | 'processing' | 'completed' | 'failed';
+export type DocumentStatus = 'uploaded' | 'processing' | 'completed' | 'failed' | 'reviewed_approved' | 'reviewed_rejected' | 'reviewed_edited';
 
 export interface User {
   id: string;

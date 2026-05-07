@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Plus, Brain, AlertTriangle, Clock, TrendingUp, FileText } from 'lucide-react';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
@@ -120,7 +121,7 @@ export default function DashboardPage() {
           <>
             <StatCard label="Total Judgments" value={stats.total} sub={`${stats.completed} completed`} color="text-foreground" />
             <StatCard label="Processing" value={stats.processing} sub="Being analyzed" color="text-[#60a5fa]" />
-            <StatCard label="Completed" value={stats.completed} sub={`${stats.total ? Math.round((stats.completed / stats.total) * 100) : 0}% success rate`} color="text-[#22C55E]" />
+            <StatCard label="Awaiting Review" value={stats.completed} sub={`${stats.total ? Math.round((stats.completed / stats.total) * 100) : 0}% processed`} color="text-[#F59E0B]" />
             <StatCard label="Failed" value={stats.failed} sub="Needs retry" color="text-[#EF4444]" />
           </>
         )}
@@ -141,10 +142,10 @@ export default function DashboardPage() {
           ) : (
             <div className="divide-y divide-border">
               {documents.slice(0, 6).map((doc) => (
-                <a key={doc._id} href={`/document/${doc._id}`} className="flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors">
+                <Link key={doc._id} href={`/document/${doc._id}`} className="flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors">
                   <span className="text-xs font-mono text-foreground">{doc._id.slice(0, 20)}...</span>
                   <StatusBadge status={doc.status as DocumentStatus} />
-                </a>
+                </Link>
               ))}
             </div>
           )}

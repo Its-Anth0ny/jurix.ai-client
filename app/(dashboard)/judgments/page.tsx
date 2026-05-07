@@ -67,8 +67,11 @@ export default function JudgmentsPage() {
           <option value="all">All statuses</option>
           <option value="uploaded">Uploaded</option>
           <option value="processing">Processing</option>
-          <option value="completed">Completed</option>
+          <option value="completed">Awaiting Review</option>
           <option value="failed">Failed</option>
+          <option value="reviewed_approved">Approved</option>
+          <option value="reviewed_rejected">Rejected</option>
+          <option value="reviewed_edited">Edited</option>
         </select>
       </div>
 
@@ -85,7 +88,7 @@ export default function JudgmentsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map(doc => (
-            <DocumentCard key={doc._id} id={doc._id} status={doc.status as DocumentStatus} createdAt={doc.created_at} onDeleted={handleDocumentDeleted} />
+            <DocumentCard key={doc._id} id={doc._id} status={doc.status as DocumentStatus} createdAt={doc.created_at} onDeleted={handleDocumentDeleted} onRetried={fetchDocuments} />
           ))}
         </div>
       )}
