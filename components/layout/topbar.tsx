@@ -1,38 +1,57 @@
 'use client';
 
-import { useTheme } from '@/hooks/useTheme';
+import { Menu, Search, Bell, Moon, Sun } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 
-export function Topbar() {
-  const { user, logout } = useAuth();
+export function Topbar({ onMobileMenuToggle, onOpenSearch }: { onMobileMenuToggle: () => void; onOpenSearch?: () => void }) {
+  const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
+  const initial = user?.email ? user.email[0].toUpperCase() : '?';
+
   return (
-    <header className="h-16 bg-card border-b px-6 flex items-center justify-between">
-      <div className="text-sm text-muted-foreground">Dashboard</div>
-      <div className="flex items-center gap-4">
+    <header className="h-11 bg-background border-b border-border flex items-center px-3 gap-3 flex-shrink-0">
+      <button
+        onClick={onMobileMenuToggle}
+        className="flex-shrink-0 p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors md:hidden"
+        aria-label="Toggle menu"
+      >
+        <Menu className="w-4 h-4" />
+      </button>
+
+      <div className="flex-1 max-w-sm">
+        <button onClick={onOpenSearch} className="w-full bg-card border border-border rounded-md px-3 py-1.5 text-sm text-muted-foreground flex items-center gap-2 cursor-pointer hover:border-primary/50 transition-colors">
+          <Search className="w-3.5 h-3.5 flex-shrink-0" />
+          <span className="flex-1 text-left">Search judgments...</span>
+          <span className="flex-shrink-0 text-[10px] font-medium bg-secondary text-muted-foreground rounded px-1 py-0.5 leading-none">
+            ⌘K
+          </span>
+        </button>
+      </div>
+
+      <div className="ml-auto flex items-center gap-1">
+        <button
+          className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+          aria-label="Notifications"
+        >
+          <Bell className="w-4 h-4" />
+        </button>
+
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-lg hover:bg-accent transition-colors"
+          className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           aria-label="Toggle theme"
         >
-          {theme === 'light' ? (
-            <svg className="w-5 h-5 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
-          ) : (
-            <svg className="w-5 h-5 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-          )}
+          {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
         </button>
-        <span className="text-sm text-foreground">{user?.email}</span>
-        <button
-          onClick={logout}
-          className="text-sm text-destructive hover:underline"
+
+        <div
+          className="w-7 h-7 rounded-full bg-primary flex items-center justify-center flex-shrink-0 ml-1"
+          aria-label={user?.email}
         >
-          Logout
-        </button>
+          <span className="text-primary-foreground text-xs font-semibold">{initial}</span>
+        </div>
       </div>
     </header>
   );

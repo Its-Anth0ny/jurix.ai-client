@@ -2,10 +2,10 @@ import { Badge } from '@/components/ui/badge';
 import { DocumentStatus } from '@/types';
 
 const statusConfig: Record<DocumentStatus, { label: string; className: string }> = {
-  uploaded: { label: 'Uploaded', className: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' },
-  processing: { label: 'Processing', className: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20' },
-  completed: { label: 'Completed', className: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20' },
-  failed: { label: 'Failed', className: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' },
+  uploaded: { label: 'Uploaded', className: 'bg-[#1f1f3a] text-[#818cf8] border border-[#2a2a4a]' },
+  processing: { label: 'Processing', className: 'bg-[#1e3a5f] text-[#60a5fa] border border-[#1e3a8f]' },
+  completed: { label: 'Completed', className: 'bg-[#1a3a1a] text-[#22C55E] border border-[#1a4a1a]' },
+  failed: { label: 'Failed', className: 'bg-[#3a1a1a] text-[#EF4444] border border-[#4a1a1a]' },
 };
 
 interface StatusBadgeProps {

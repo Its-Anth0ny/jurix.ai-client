@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Sparkles } from 'lucide-react';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 import { ActionPlan, ReviewDecision } from '@/types';
@@ -28,11 +27,9 @@ export function DecisionPanel({
   async function handleDecision(decision: ReviewDecision['decision'], editedOutput?: ActionPlan) {
     setIsSubmitting(true);
     setError('');
-
     try {
       const token = getToken();
       if (!token) throw new Error('Not authenticated');
-
       await api.reviewDocument(documentId, decision, editedOutput, token);
       onReviewSubmitted();
     } catch (err) {
@@ -54,47 +51,49 @@ export function DecisionPanel({
           onSave={(edited) => handleDecision('edited', edited)}
         />
       )}
-      <Card>
-        <CardHeader>
-          <CardTitle>Review Decision</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {error && (
-            <div className="text-destructive text-sm p-2 bg-destructive/10 rounded">{error}</div>
-          )}
-          {reviewed ? (
-            <div className="text-green-600 dark:text-green-400 p-4 bg-green-500/10 rounded-lg">
-              <p className="font-semibold">Already reviewed</p>
-              <p className="text-sm">Decision: {currentDecision}</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <Button
-                onClick={() => handleDecision('approved')}
-                disabled={isSubmitting}
-                className="w-full bg-green-600 hover:bg-green-700"
-              >
-                ✓ Approve
-              </Button>
-              <Button
-                onClick={() => setEditModalOpen(true)}
-                disabled={isSubmitting}
-                className="w-full"
-              >
-                ✎ Edit & Approve
-              </Button>
-              <Button
-                onClick={() => handleDecision('rejected')}
-                disabled={isSubmitting}
-                variant="destructive"
-                className="w-full"
-              >
-                ✗ Reject
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-primary rounded flex items-center justify-center">
+            <Sparkles className="w-2.5 h-2.5 text-white" />
+          </div>
+          <span className="text-xs font-medium text-primary uppercase tracking-wide">AI Recommendation</span>
+        </div>
+
+        {error && (
+          <div className="text-destructive text-xs p-2 bg-destructive/10 border border-destructive/20 rounded-md">{error}</div>
+        )}
+
+        {reviewed ? (
+          <div className="p-3 bg-[#1a3a1a] border border-[#1a4a1a] rounded-lg">
+            <p className="text-sm font-medium text-[#22C55E]">Already reviewed</p>
+            <p className="text-xs text-muted-foreground mt-1">Decision: {currentDecision}</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <button
+              onClick={() => handleDecision('approved')}
+              disabled={isSubmitting}
+              className="w-full h-9 bg-[#22C55E] hover:bg-[#16a34a] text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              ✓ Approve
+            </button>
+            <button
+              onClick={() => setEditModalOpen(true)}
+              disabled={isSubmitting}
+              className="w-full h-9 bg-secondary border border-border hover:bg-card text-foreground text-sm rounded-lg transition-colors disabled:opacity-50"
+            >
+              ✎ Edit &amp; Approve
+            </button>
+            <button
+              onClick={() => handleDecision('rejected')}
+              disabled={isSubmitting}
+              className="w-full h-9 bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 text-destructive text-sm rounded-lg transition-colors disabled:opacity-50"
+            >
+              ✗ Reject
+            </button>
+          </div>
+        )}
+      </div>
     </>
   );
 }
